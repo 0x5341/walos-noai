@@ -1,7 +1,7 @@
 import type { BusMsg } from "./bus_msg";
 import type { FSDirHandle } from "./interface/filesystem";
 import type { KernelOption } from "./kernel_option";
-import { HostProcess } from "./process/host";
+import { HostProcess } from "./process/kind/host";
 import type { Process } from "./process/process";
 import { RPCPort } from "./util/rpcport";
 
