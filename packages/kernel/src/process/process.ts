@@ -1,5 +1,5 @@
 import type { ProcessID } from "./pid";
-import type { CliErrorCode, ProcessContext, ResultNoT } from "./process_context";
+import type { CliErrorCode, ProcessContext, ResultE } from "./process_context";
 
 type ErrorKind = "ok" | "error" | number;
 
@@ -8,9 +8,9 @@ class ExitError extends Error {
   static {
     this.prototype.name = "ExitError";
   }
-  constructor(message = "", options: { kind?: ErrorKind } = {}) {
+  constructor(options: { kind: ErrorKind }) {
     const { kind, ...rest } = options;
-    super(message, rest);
+    super(`Exit with kind:${kind}`, rest);
     this.kind = kind ?? "ok";
   }
 }
@@ -21,8 +21,8 @@ export abstract class Process {
   readonly environment: Record<string, string>;
   readonly args: string[];
   readonly stdin: ReadableStream<Uint8Array>;
-  readonly stdout: ReadableStream<Uint8Array>;
-  readonly stderr: ReadableStream<Uint8Array>;
+  readonly stdout: WritableStream<Uint8Array>;
+  readonly stderr: WritableStream<Uint8Array>;
 
   constructor(option: ProcessSpawnOption) {
     this.pid = option.pid;
@@ -58,55 +58,144 @@ export abstract class Process {
         exit: {
           exit(status) {
             if (status.kind === "ok") {
-              throw new ExitError("", { kind: "ok" });
+              throw new ExitError({ kind: "ok" });
             } else {
-              throw new ExitError("", { kind: "error" });
+              throw new ExitError({ kind: "error" });
             }
           },
           exitWithCode(statusCode) {
-            throw new ExitError("", { kind: statusCode });
+            throw new ExitError({ kind: statusCode });
           },
         },
         stdin: {
           async readViaStream() {
-            let resolver: (value: ResultNoT<CliErrorCode> | PromiseLike<ResultNoT<CliErrorCode>>) => void;
-            const promise = new Promise<ResultNoT<CliErrorCode>>((r) => { resolver = r; });
-            const stream = new TransformStream<Uint8Array, Uint8Array>({
-              async flush(ctl) {
-                ctl.
-              }
+            let resolver: (result: ResultE<CliErrorCode>) => void;
+            const promise = new Promise<ResultE<CliErrorCode>>((resolve) => {
+              resolver = resolve;
             });
-            const stream2 = self.stdin.pipeThrough(stream);
-            return [stream2, promise];
+
+            const reader = self.stdin.getReader({ mode: "byob" });
+            const stream = new ReadableStream<Uint8Array>({
+              type: "bytes",
+              autoAllocateChunkSize: 1024,
+              async pull(ctl) {
+                try {
+                  const buffer = new Uint8Array(1024);
+                  const { done, value } = await reader.read(buffer);
+                  if (done) {
+                    resolver({ kind: "ok", ok: undefined });
+                    ctl.close();
+                  } else {
+                    ctl.enqueue(value);
+                  }
+                } catch (err) {
+                  resolver({ kind: "error", err: "pipe" });
+                  ctl.error(err);
+                }
+              },
+              async cancel(reason) {
+                reader.cancel(reason);
+                resolver({ kind: "error", err: "pipe" });
+              },
+            });
+
+            return [stream, promise];
           },
         },
         stdout: {
           async writeViaStream(data) {
-            let resolver: ((value: ResultNoT<CliErrorCode> | PromiseLike<ResultNoT<CliErrorCode>>) => void);
-            const promise = new Promise<ResultNoT<CliErrorCode>>((resolve) => { resolver = resolve; });
-            const stream = new TransformStream<Uint8Array, Uint8Array>({
-              async flush() {
-                resolver({ kind: "error", err: "pipe" });
-              }
-            })
-            const stream2 = self.stdout.pipeThrough(stream);
+            // let resolver: (result: ResultE<CliErrorCode>) => void;
+            // const promise = new Promise<ResultE<CliErrorCode>>((resolve) => { resolver = resolve; });
 
-          }
-        }
+            // const stream = new WritableStream<Uint8Array>({
+            //   async write(chunk, ctl) {
+            //     try {
+            //       await writer.write(chunk);
+            //     } catch (err) {
+            //       resolver({ kind: "error", err: "pipe" });
+            //       await writer.abort(err);
+            //       ctl.error(err);
+            //     }
+            //   },
+            //   async close() {
+            //     try {
+            //       await writer.close();
+            //       resolver({ kind: "ok", ok: undefined });
+            //     } catch (err) {
+            //       await writer.abort(err);
+            //       resolver({ kind: "error", err: "pipe" });
+            //     }
+            //   },
+            //   async abort(reason) {
+            //     await writer.abort(reason);
+            //     resolver({ kind: "error", err: "pipe" });
+            //   }
+            // })
+
+            return data
+              .pipeTo(self.stdout)
+              .then(() => {
+                return {
+                  kind: "ok",
+                  ok: undefined,
+                } satisfies ResultE<CliErrorCode>;
+              })
+              .catch(() => {
+                return {
+                  kind: "error",
+                  err: "pipe",
+                } satisfies ResultE<CliErrorCode>;
+              });
+          },
+        },
+        stderr: {
+          async writeViaStream(data) {
+            return data
+              .pipeTo(self.stderr)
+              .then(() => {
+                return {
+                  kind: "ok",
+                  ok: undefined,
+                } satisfies ResultE<CliErrorCode>;
+              })
+              .catch(() => {
+                return {
+                  kind: "error",
+                  err: "pipe",
+                } satisfies ResultE<CliErrorCode>;
+              });
+          },
+        },
       },
-    }
+    };
   }
 
-  public async run(): Promise<void> {
+  public async initial(): Promise<void> {
+    await this.init();
+  }
+
+  public async run(): Promise<number> {
     try {
-      await this.start();
+      const ctx = this.mkProcessContext();
+      await this.start(ctx);
     } catch (err) {
-      if 
+      if (err instanceof ExitError) {
+        if (err.kind === "ok") {
+          return 0;
+        } else if (err.kind === "error") {
+          return 1;
+        } else {
+          return err.kind;
+        }
+      } else {
+        throw err;
+      }
     }
+    return 0;
   }
 
-  abstract init(): Promise<void>;
-  abstract start(): Promise<void>;
+  protected abstract init(): Promise<void>;
+  protected abstract start(ctx: ProcessContext): Promise<void>;
 }
 
 export type ProcessSpawnOption = {
@@ -116,6 +205,6 @@ export type ProcessSpawnOption = {
   args: string[];
 
   stdin: ReadableStream<Uint8Array>;
-  stdout: ReadableStream<Uint8Array>;
-  stderr: ReadableStream<Uint8Array>;
+  stdout: WritableStream<Uint8Array>;
+  stderr: WritableStream<Uint8Array>;
 };

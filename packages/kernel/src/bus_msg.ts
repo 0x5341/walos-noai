@@ -1,8 +1,10 @@
+import type { KernelOption } from "./kernel_option";
 import type { ProcessID } from "./process/pid";
+import type { ProcessContext } from "./process/process_context";
 
 export type BusMsg = {
   isKernelInitialized: [void, boolean];
-  kernelInitialize: [void, void];
-  spawnHostProcess: [void, [boolean, ProcessID, string]];
-  getHostProcessContext: [ProcessID, null];
+  kernelInitialize: [KernelOption, void];
+  spawnHostProcess: [void, ProcessID];
+  getHostProcessContext: [ProcessID, ProcessContext];
 };
