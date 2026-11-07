@@ -1,0 +1,14 @@
+{
+  "name": "@walos/kernel",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "typecheck": "bun check"
+  },
+  "devDependencies": {
+    "@typescript/lib-dom": "npm:@types/web@^0.0.360"
+  },
+  "peerDependencies": {
+    "typescript": "^7"
+  }
+}
