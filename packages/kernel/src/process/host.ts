@@ -1,25 +1,37 @@
-import type { Process, ProcessSpawnOption } from "./process";
+import { Process, type ProcessSpawnOption } from "./process";
 import type { ProcessContext } from "./process_context";
 
-export class HostProcess implements Process {
-  pid: number;
-  ppid: number;
-  ctx!: ProcessContext;
+export class HostProcess extends Process {
+  public ctx: ProcessContext | undefined;
+  public stdin_writer: WritableStream<Uint8Array>;
+  public stdout_reader: ReadableStream<Uint8Array>;
+  public stderr_reader: ReadableStream<Uint8Array>;
 
-  constructor(option: ProcessSpawnOption) {
-    this.pid = option.pid;
-    this.ppid = option.ppid;
+  constructor(pid: number, ppid: number) {
+    const stdin = new TransformStream<Uint8Array, Uint8Array>();
+    const stdout = new TransformStream<Uint8Array, Uint8Array>();
+    const stderr = new TransformStream<Uint8Array, Uint8Array>();
+
+    super({
+      pid: pid,
+      ppid: ppid,
+      args: ["@walos/builtin/host"],
+      environment: {},
+      stdin: stdin.readable,
+      stdout: stdout.writable,
+      stderr: stderr.writable,
+    });
+
+    this.stdin_writer = stdin.writable;
+    this.stdout_reader = stdout.readable;
+    this.stderr_reader = stderr.readable;
   }
 
-  init(): Promise<void> {
-    return new Promise((resolve, _reject) => resolve()); // without resolve, just keep running
+  protected override async init(): Promise<void> {
+    return Promise.resolve();
   }
-
-  private mkProcessContext(): ProcessContext {}
-
-  run(): Promise<void> {
-    return new Promise((_resolve, _reject) => {}); // without resolve, just keep running
+  protected override start(ctx: ProcessContext): Promise<void> {
+    this.ctx = ctx;
+    return new Promise(() => {});
   }
 }
-
-export 

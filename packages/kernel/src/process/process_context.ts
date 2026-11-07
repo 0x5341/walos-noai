@@ -1,9 +1,10 @@
 // based on wasi 0.3
 
 // base types
-export type Result<T, E> = { kind: "ok", ok: T } | { kind: "error", err: E };
-export type ResultNoTE = Result<undefined, undefined>;
-export type ResultNoT<E> = Result<undefined, E>;
+export type ResultTE<T, E> = { kind: "ok"; ok: T } | { kind: "error"; err: E };
+export type Result = ResultTE<undefined, undefined>;
+export type ResultT<T> = ResultTE<T, undefined>;
+export type ResultE<E> = ResultTE<undefined, E>;
 
 export interface ProcessContext {
   cli: CliCtx;
@@ -24,7 +25,7 @@ export interface CliEnvironmentCtx {
 }
 
 export interface CliExitCtx {
-  exit(status: ResultNoTE): Promise<void>;
+  exit(status: Result): Promise<void>;
   exitWithCode(statusCode: number): Promise<void>;
 }
 
@@ -32,18 +33,18 @@ export type CliErrorCode = "io" | "illegal-byte-sequence" | "pipe";
 
 export interface CliStdinCtx {
   readViaStream(): Promise<
-    [ReadableStream<Uint8Array>, Promise<ResultNoT<CliErrorCode>>]
+    [ReadableStream<Uint8Array>, Promise<ResultE<CliErrorCode>>]
   >;
 }
 
 export interface CliStdoutCtx {
   writeViaStream(
     data: ReadableStream<Uint8Array>,
-  ): Promise<ResultNoT<CliErrorCode>>;
+  ): Promise<ResultE<CliErrorCode>>;
 }
 
 export interface CliStderrCtx {
   writeViaStream(
     data: ReadableStream<Uint8Array>,
-  ): Promise<ResultNoT<CliErrorCode>>;
+  ): Promise<ResultE<CliErrorCode>>;
 }
