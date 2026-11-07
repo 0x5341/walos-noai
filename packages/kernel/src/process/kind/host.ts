@@ -1,5 +1,5 @@
-import { Process, type ProcessSpawnOption } from "./process";
-import type { ProcessContext } from "./process_context";
+import { Process, type ProcessSpawnOption } from "../process";
+import type { ProcessContext } from "../process_context";
 
 export class HostProcess extends Process {
   public ctx: ProcessContext | undefined;
@@ -32,6 +32,6 @@ export class HostProcess extends Process {
   }
   protected override start(ctx: ProcessContext): Promise<void> {
     this.ctx = ctx;
-    return new Promise(() => {});
+    return new Promise(() => { });
   }
 }
