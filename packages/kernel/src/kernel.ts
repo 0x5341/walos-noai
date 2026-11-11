@@ -11,6 +11,7 @@ export class Kernel {
   private initialized = false;
   private processes: Array<Process> = [];
   private nextProcessID: number = 0;
+  private hostProcess: HostProcess | undefined;
 
   constructor() {
     this.busport = new RPCPort();
@@ -39,6 +40,10 @@ export class Kernel {
       spawnHostProcess: async () => {
         this.checkInitialized();
 
+        if (this.hostProcess !== undefined) {
+          return ["alreadySpawned", []];
+        }
+
         const pid = this.nextProcessID;
         this.nextProcessID++;
 
@@ -46,19 +51,23 @@ export class Kernel {
 
         const process = new HostProcess(pid, ppid);
         this.processes.push(process);
+        this.hostProcess = process;
         process.initial();
         process.run();
         return [pid, []];
       },
-      getHostProcessContext: async (hostid) => {
+      getHostProcessContext: async () => {
         this.checkInitialized();
 
-        const process = this.processes.find((p) => p.pid === hostid) as
-          HostProcess | undefined;
-        if (process === undefined || process.ctx === undefined) {
-          throw new Error(`Host process with id ${hostid} not found`);
+        if (this.hostProcess === undefined) {
+          throw new Error("Host process is not spawned");
         }
-        return [process.ctx, []];
+        
+        if (this.hostProcess.ctx === undefined) {
+          throw new Error("Host process context is not initialized");
+        }
+
+        return [this.hostProcess.ctx, []];
       },
     });
   }

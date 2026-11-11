@@ -5,6 +5,6 @@ import type { ProcessContext } from "./process/process_context";
 export type BusMsg = {
   isKernelInitialized: [void, boolean];
   kernelInitialize: [KernelOption, void];
-  spawnHostProcess: [void, ProcessID];
-  getHostProcessContext: [ProcessID, ProcessContext];
+  spawnHostProcess: [void, ProcessID | "alreadySpawned"];
+  getHostProcessContext: [void, ProcessContext];
 };
