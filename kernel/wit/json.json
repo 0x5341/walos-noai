@@ -1,0 +1,116 @@
+{
+  "worlds": [
+    {
+      "name": "process-only-spawn",
+      "imports": {
+        "interface-0": {
+          "interface": {
+            "id": 0
+          }
+        }
+      },
+      "exports": {},
+      "package": 0
+    }
+  ],
+  "interfaces": [
+    {
+      "name": "spawn",
+      "types": {
+        "spawn-handle": 0
+      },
+      "functions": {
+        "spawn": {
+          "name": "spawn",
+          "kind": "async-freestanding",
+          "params": [
+            {
+              "name": "path",
+              "type": "string"
+            },
+            {
+              "name": "args",
+              "type": 1
+            },
+            {
+              "name": "env",
+              "type": 1
+            }
+          ],
+          "result": 3
+        },
+        "[method]spawn-handle.terminate": {
+          "name": "[method]spawn-handle.terminate",
+          "kind": {
+            "method": 0
+          },
+          "params": [
+            {
+              "name": "self",
+              "type": 4
+            }
+          ]
+        }
+      },
+      "docs": {
+        "contents": "world process {\n  include wasi:cli/imports@0.3.2;\n  include wasi:clocks/imports@0.3.2;\n  include wasi:filesystem/imports@0.3.2;\n  include wasi:random/imports@0.3.2;\n  include wasi:sockets/imports@0.3.2;\n  import wasi:http/client@0.3.2;\n  export wasi:cli/run@0.3.2;\n}\nworld http-serve {\n  include process;\n  export wasi:http/handler@0.3.2;\n}"
+      },
+      "package": 0
+    }
+  ],
+  "types": [
+    {
+      "name": "spawn-handle",
+      "kind": "resource",
+      "owner": {
+        "interface": 0
+      }
+    },
+    {
+      "name": null,
+      "kind": {
+        "list": "string"
+      },
+      "owner": null
+    },
+    {
+      "name": null,
+      "kind": {
+        "handle": {
+          "own": 0
+        }
+      },
+      "owner": null
+    },
+    {
+      "name": null,
+      "kind": {
+        "result": {
+          "ok": 2,
+          "err": "string"
+        }
+      },
+      "owner": null
+    },
+    {
+      "name": null,
+      "kind": {
+        "handle": {
+          "borrow": 0
+        }
+      },
+      "owner": null
+    }
+  ],
+  "packages": [
+    {
+      "name": "walos:process@0.3.2",
+      "interfaces": {
+        "spawn": 0
+      },
+      "worlds": {
+        "process-only-spawn": 0
+      }
+    }
+  ]
+}

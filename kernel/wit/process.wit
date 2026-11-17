@@ -1,0 +1,33 @@
+package walos:process@0.3.2;
+
+// world process {
+//   include wasi:cli/imports@0.3.2;
+//   include wasi:clocks/imports@0.3.2;
+//   include wasi:filesystem/imports@0.3.2;
+//   include wasi:random/imports@0.3.2;
+//   include wasi:sockets/imports@0.3.2;
+//   import wasi:http/client@0.3.2;
+
+//   export wasi:cli/run@0.3.2;
+// }
+
+// world http-serve {
+//   include process;
+//   export wasi:http/handler@0.3.2;
+// }
+
+interface spawn {
+  spawn: async func(
+    path: string,
+    args: list<string>,
+    env: list<string>,
+  ) -> result<own<spawn-handle>, string>;
+
+  resource spawn-handle {
+    terminate: async func();
+  }
+}
+
+world process-only-spawn {
+  import spawn;
+}

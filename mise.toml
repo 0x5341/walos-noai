@@ -1,2 +1,4 @@
 [tools]
+"aqua:bytecodealliance/wasm-pkg-tools" = "latest"
 bun = "latest"
+wasm-tools = "latest"

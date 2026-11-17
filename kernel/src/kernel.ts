@@ -1,12 +1,12 @@
 import type { BusMsg } from "./bus_msg";
-import type { FSDirHandle } from "./interface/filesystem";
+import type { Descriptor } from "./filesystem/interface";
 import type { KernelOption } from "./kernel_option";
 import { HostProcess } from "./process/kind/host";
 import type { Process } from "./process/process";
 import { RPCPort } from "./util/rpcport";
 
 export class Kernel {
-  private fsroot!: FSDirHandle;
+  private fsroot!: Descriptor;
   private busport: RPCPort<BusMsg>;
   private initialized = false;
   private processes: Array<Process> = [];
@@ -62,7 +62,7 @@ export class Kernel {
         if (this.hostProcess === undefined) {
           throw new Error("Host process is not spawned");
         }
-        
+
         if (this.hostProcess.ctx === undefined) {
           throw new Error("Host process context is not initialized");
         }

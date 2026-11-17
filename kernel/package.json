@@ -6,9 +6,15 @@
     "typecheck": "bun check"
   },
   "devDependencies": {
-    "@typescript/lib-dom": "npm:@types/web@^0.0.360"
+    "@types/bun": "^1.4.4",
+    "@typescript/lib-dom": "npm:@types/web@^0.0.360",
+    "change-case": "^5.4.4"
   },
   "peerDependencies": {
     "typescript": "^7"
+  },
+  "dependencies": {
+    "dexie": "^4.4.7",
+    "nope-id": "^1.4.2"
   }
 }

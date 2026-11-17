@@ -32,6 +32,6 @@ export class HostProcess extends Process {
   }
   protected override start(ctx: ProcessContext): Promise<void> {
     this.ctx = ctx;
-    return new Promise(() => { });
+    return new Promise(() => {});
   }
 }
