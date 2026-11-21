@@ -99,8 +99,7 @@ export type ErrorCode =
   | string
   | null;
 
-export type Advice =
-  "normal" | "sequential" | "random" | "will-need" | "dont-need" | "no-reuse";
+export type Advice = "normal" | "sequential" | "random" | "will-need" | "dont-need" | "no-reuse";
 
 export interface MetadataHashValue {
   lower: bigint;
@@ -118,28 +117,16 @@ export interface Descriptor {
   setTimes();
 
   // For file
-  read(
-    offset: Filesize,
-  ): Promise<[ReadableStream<Uint8Array>, Promise<ResultE<ErrorCode>>]>;
-  write(
-    data: ReadableStream<Uint8Array>,
-    offset: Filesize,
-  ): Promise<ResultE<ErrorCode>>;
+  read(offset: Filesize): Promise<[ReadableStream<Uint8Array>, Promise<ResultE<ErrorCode>>]>;
+  write(data: ReadableStream<Uint8Array>, offset: Filesize): Promise<ResultE<ErrorCode>>;
   append(data: ReadableStream<Uint8Array>): Promise<ResultE<ErrorCode>>;
-  advice(
-    offset: Filesize,
-    length: Filesize,
-    advice: Advice,
-  ): Promise<ResultE<ErrorCode>>;
+  advice(offset: Filesize, length: Filesize, advice: Advice): Promise<ResultE<ErrorCode>>;
   sync(): Promise<ResultE<ErrorCode>>;
   setSize(size: Filesize): Promise<ResultE<ErrorCode>>;
 
   // For directory
   createDirectoryAt(path: string): Promise<ResultE<ErrorCode>>;
-  createSymlinkAt(
-    oldPath: string,
-    newPath: string,
-  ): Promise<ResultE<ErrorCode>>;
+  createSymlinkAt(oldPath: string, newPath: string): Promise<ResultE<ErrorCode>>;
   createHardlinkAt(
     oldPath: string,
     newDescriptor: Descriptor,

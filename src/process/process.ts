@@ -41,13 +41,13 @@ export abstract class Process {
     return {
       cli: {
         environment: {
-           async getArguments() {
+          async getArguments() {
             return Promise.resolve(self.args);
           },
-           async getEnvironment() {
+          async getEnvironment() {
             return Promise.resolve(self.environment);
           },
-           async getInitialCwd() {
+          async getInitialCwd() {
             if (self.environment.CWD) {
               return Promise.resolve(self.environment.CWD);
             } else {

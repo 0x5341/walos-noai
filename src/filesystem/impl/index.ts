@@ -1,12 +1,7 @@
-import { Dexie } from 'dexie';
-import type { EntityTable } from 'dexie';
+import { Dexie } from "dexie";
+import type { EntityTable } from "dexie";
 import type { ResultE, ResultTE } from "../../util/result";
-import type {
-  Descriptor,
-  DescriptorStat,
-  DescriptorType,
-  ErrorCode,
-} from "../interface";
+import type { Descriptor, DescriptorStat, DescriptorType, ErrorCode } from "../interface";
 
 export interface BrowserFSRootOption {
   opfsRoot: FileSystemDirectoryHandle;
@@ -32,17 +27,13 @@ type DB = Dexie & {
 };
 
 export class BrowserDescriptor implements Descriptor {
-  public static async createRoot(
-    option: BrowserFSRootOption,
-  ): Promise<BrowserDescriptor> {
+  public static async createRoot(option: BrowserFSRootOption): Promise<BrowserDescriptor> {
     const { opfsRoot, dbName } = option,
-
-    // create opfs
-     contentsHandle = await opfsRoot.getDirectoryHandle("contents", {
-      create: true,
-    }),
-
-     db = new Dexie(dbName) as DB;
+      // create opfs
+      contentsHandle = await opfsRoot.getDirectoryHandle("contents", {
+        create: true,
+      }),
+      db = new Dexie(dbName) as DB;
     db.version(1).stores({
       main: "*path, cid", // Type, lastModified, size
     });
@@ -82,7 +73,7 @@ export class BrowserDescriptor implements Descriptor {
 
   public async getType(): Promise<ResultTE<DescriptorType, ErrorCode>> {
     const db = await this.getDB(),
-     entry = await db.main.get(this.path);
+      entry = await db.main.get(this.path);
     if (!entry) {
       return { err: "no-entry", kind: "error" };
     }
@@ -90,7 +81,7 @@ export class BrowserDescriptor implements Descriptor {
   }
   public async stat(): Promise<ResultTE<DescriptorStat, ErrorCode>> {
     const db = await this.getDB(),
-     entry = await db.main.get(this.path);
+      entry = await db.main.get(this.path);
     if (!entry) {
       return { err: "no-entry", kind: "error" };
     }
@@ -135,38 +126,37 @@ export class BrowserDescriptor implements Descriptor {
         };
       }
 
-      case null: { throw new Error('Not implemented yet: null case') }
+      case null: {
+        throw new Error("Not implemented yet: null case");
+      }
       default: {
         throw new Error(`Unknown descriptor type: ${entry.type}`);
       }
     }
   }
-  public async read(): Promise<
-    [ReadableStream<Uint8Array>, Promise<ResultE<ErrorCode>>]
-  > { /* empty */ }
-  public  async write(data: ReadableStream<Uint8Array>): Promise<ResultE<ErrorCode>> {
+  public async read(): Promise<[ReadableStream<Uint8Array>, Promise<ResultE<ErrorCode>>]> {
+    /* empty */
+  }
+  public async write(data: ReadableStream<Uint8Array>): Promise<ResultE<ErrorCode>> {
     throw new Error("Method not implemented.");
   }
-  public  async sync(): Promise<ResultE<ErrorCode>> {
+  public async sync(): Promise<ResultE<ErrorCode>> {
     throw new Error("Method not implemented.");
   }
-  public  async createDirectoryAt(path: string): Promise<ResultE<ErrorCode>> {
+  public async createDirectoryAt(path: string): Promise<ResultE<ErrorCode>> {
     throw new Error("Method not implemented.");
   }
-  public  async createSymlinkAt(
-    oldPath: string,
-    newPath: string,
-  ): Promise<ResultE<ErrorCode>> {
+  public async createSymlinkAt(oldPath: string, newPath: string): Promise<ResultE<ErrorCode>> {
     throw new Error("Method not implemented.");
   }
-  public  async createHardlinkAt(
+  public async createHardlinkAt(
     oldPath: string,
     newDescriptor: Descriptor,
     newPath: string,
   ): Promise<ResultE<ErrorCode>> {
     throw new Error("Method not implemented.");
   }
-  public  async [Symbol.asyncDispose](): Promise<void> {
+  public async [Symbol.asyncDispose](): Promise<void> {
     throw new Error("Method not implemented.");
   }
 }

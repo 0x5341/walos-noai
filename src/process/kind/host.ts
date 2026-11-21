@@ -9,8 +9,8 @@ export class HostProcess extends Process {
 
   public constructor(pid: number, ppid: number) {
     const stdin = new TransformStream<Uint8Array, Uint8Array>(),
-     stdout = new TransformStream<Uint8Array, Uint8Array>(),
-     stderr = new TransformStream<Uint8Array, Uint8Array>();
+      stdout = new TransformStream<Uint8Array, Uint8Array>(),
+      stderr = new TransformStream<Uint8Array, Uint8Array>();
 
     super({
       pid,
@@ -30,8 +30,10 @@ export class HostProcess extends Process {
   protected override init(): void {
     return;
   }
-  protected override  async start(ctx: ProcessContext): Promise<void> {
+  protected override async start(ctx: ProcessContext): Promise<void> {
     this.ctx = ctx;
-    return new Promise(() => { /* empty */ });
+    return new Promise(() => {
+      /* empty */
+    });
   }
 }

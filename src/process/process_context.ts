@@ -28,19 +28,13 @@ export interface CliExitCtx {
 export type CliErrorCode = "io" | "illegal-byte-sequence" | "pipe";
 
 export interface CliStdinCtx {
-  readViaStream(): Promise<
-    [ReadableStream<Uint8Array>, Promise<ResultE<CliErrorCode>>]
-  >;
+  readViaStream(): Promise<[ReadableStream<Uint8Array>, Promise<ResultE<CliErrorCode>>]>;
 }
 
 export interface CliStdoutCtx {
-  writeViaStream(
-    data: ReadableStream<Uint8Array>,
-  ): Promise<ResultE<CliErrorCode>>;
+  writeViaStream(data: ReadableStream<Uint8Array>): Promise<ResultE<CliErrorCode>>;
 }
 
 export interface CliStderrCtx {
-  writeViaStream(
-    data: ReadableStream<Uint8Array>,
-  ): Promise<ResultE<CliErrorCode>>;
+  writeViaStream(data: ReadableStream<Uint8Array>): Promise<ResultE<CliErrorCode>>;
 }

@@ -6,19 +6,14 @@ export class KernelBus {
   private worker!: SharedWorker;
   private rpcport!: RPCPort<BusMsg>;
 
-  public async create(
-    option?: KernelBusOption,
-    kernelOption?: KernelOption,
-  ): Promise<KernelBus> {
+  public async create(option?: KernelBusOption, kernelOption?: KernelOption): Promise<KernelBus> {
     const opt = kernelBusOptionWithDefault(option);
     this.worker = new SharedWorker(opt.workerUrl, { name: opt.kernelName });
     this.rpcport = new RPCPort(this.worker.port);
 
     if (!(await this.rpcport.call("isKernelInitialized", undefined, []))) {
       if (kernelOption === undefined) {
-        throw new Error(
-          "Kernel is not initialized, please provide kernelOption",
-        );
+        throw new Error("Kernel is not initialized, please provide kernelOption");
       }
 
       await this.rpcport.call("kernelInitialize", kernelOption, []);
@@ -33,9 +28,7 @@ export interface KernelBusOption {
   kernelName?: string;
 }
 
-function kernelBusOptionWithDefault(
-  option?: KernelBusOption,
-): Required<KernelBusOption> {
+function kernelBusOptionWithDefault(option?: KernelBusOption): Required<KernelBusOption> {
   return {
     kernelName: option?.kernelName ?? "walos-kernel",
     workerUrl: option?.workerUrl ?? "./kernel.worker.js",
