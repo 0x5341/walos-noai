@@ -17,7 +17,8 @@
     "change-case": "^5.4.4",
     "oxfmt": "^0.79.0",
     "oxlint": "^1.94.0",
-    "tsrs": "^7.1.0-beta.tsrs4"
+    "tsrs": "^7.1.0-beta.tsrs4",
+    "valibot": "^1.5.0"
   },
   "peerDependencies": {
     "typescript": "^7"

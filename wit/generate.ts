@@ -17,12 +17,15 @@ interface WitWorld {
 interface WitInterface {
   name: string;
   types: Record<string, number>;
-  functions: Record<string, {
+  functions: Record<
+    string,
+    {
       name: string;
       kind: WitFunctionKind;
       params: { name: string; type: number }[];
       result: number;
-    }>;
+    }
+  >;
   package: number;
 }
 
@@ -50,14 +53,12 @@ interface WitPackage {
   worlds: Record<string, number>;
 }
 
-const path = import.meta.dirname,
+const path = import.meta.dirname;
+const worldname = process.argv[2];
 
- worldname = process.argv[2],
-
- wit = (await $`wasm-tools component wit ${path} --json`.json()) as Wit,
-
-// generate base type
- baseType = `// base types
+const wit = (await $`wasm-tools component wit ${path} --json`.json()) as Wit;
+// Generate base type
+const baseType = `// base types
 
 export type Result<T, E> = ResultOK<T> | ResultErr<E>;
 export interface ResultOK<T> { kind: "ok", value: T };
@@ -89,9 +90,8 @@ export type Feature<T> = Promise<T>
 
 export type StreamReadable<T> = ReadableStream<T>;
 export type StreamWritable<T> = WritableStream<T>;
-`,
-
- theworld = (() => {
+`;
+const theworld = (() => {
   const theworld = wit.worlds.filter((world) => world.name === worldname);
   if (theworld.length === 0) {
     throw new Error(`World not found: ${worldname}`);
@@ -117,21 +117,25 @@ interface GeneratedFunction {
   comment: string;
 }
 
-const generatedTypes: GeneratedType[] = [];
-const generatedInterfaces: any[] = [];
+const generatedTypes: GeneratedType[] = [],
+  generatedInterfaces: any[] = [];
 
 function generateWorld(world: WitWorld) {
   for (const [key, value] of Object.entries(world.imports)) {
-    const {id} = value.interface;
-    const theinterface = wit.interfaces[id];
+    const { id } = value.interface,
+      theinterface = wit.interfaces[id];
   }
 }
 
-function generateInterface(iface: WitInterface) { /* empty */ }
+function generateInterface(iface: WitInterface) {
+  /* Empty */
+}
 
-function generateType(type: WitType) { /* empty */ }
+function generateType(type: WitType) {
+  /* Empty */
+}
 
 function generatePrefixName(pkg: WitPackage) {
   const rawName = pkg.name,
-   namespace = rawName;
+    namespace = rawName;
 }
