@@ -10,7 +10,8 @@
   "devDependencies": {
     "@types/bun": "^1.4.4",
     "change-case": "^5.4.4",
-    "oxlint": "^1.94.0"
+    "oxlint": "^1.94.0",
+    "tsrs": "^7.1.0-beta.tsrs4"
   },
   "peerDependencies": {
     "typescript": "^7"

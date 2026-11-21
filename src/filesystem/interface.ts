@@ -58,7 +58,7 @@ export type NewTimestamp = "no-change" | "now" | Instant;
 export type DirectoryEntry = {
   type: DescriptorType;
   name: string;
-}
+};
 
 export type ErrorCode =
   | "access"
@@ -100,17 +100,12 @@ export type ErrorCode =
   | null;
 
 export type Advice =
-  | "normal"
-  | "sequential"
-  | "random"
-  | "will-need"
-  | "dont-need"
-  | "no-reuse"
+  "normal" | "sequential" | "random" | "will-need" | "dont-need" | "no-reuse";
 
 export type MetadataHashValue = {
   lower: bigint;
   upper: bigint;
-}
+};
 
 export interface Descriptor {
   // always
@@ -120,9 +115,7 @@ export interface Descriptor {
   [Symbol.asyncDispose](): Promise<void>;
 
   // for file & directory
-  setTimes(
-    
-  )
+  setTimes();
 
   // for file
   read(
@@ -133,7 +126,11 @@ export interface Descriptor {
     offset: Filesize,
   ): Promise<ResultE<ErrorCode>>;
   append(data: ReadableStream<Uint8Array>): Promise<ResultE<ErrorCode>>;
-  advice(offset: Filesize, length: Filesize, advice: Advice): Promise<ResultE<ErrorCode>>;
+  advice(
+    offset: Filesize,
+    length: Filesize,
+    advice: Advice,
+  ): Promise<ResultE<ErrorCode>>;
   sync(): Promise<ResultE<ErrorCode>>;
   setSize(size: Filesize): Promise<ResultE<ErrorCode>>;
 
