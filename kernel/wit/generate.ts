@@ -20,9 +20,9 @@ interface WitInterface {
   functions: {
     [key: string]: {
       name: string;
-      kind: WitFunctionKind
-      params: { name: string, type: number }[]
-      result: number
+      kind: WitFunctionKind;
+      params: { name: string; type: number }[];
+      result: number;
     };
   };
   package: number;
@@ -32,8 +32,8 @@ type WitFunctionKind =
   | "freestanding"
   | "async-freestading"
   | {
-    method: number;
-  };
+      method: number;
+    };
 
 interface WitType {
   name: string;
@@ -129,16 +129,11 @@ function generateWorld(world: WitWorld) {
   }
 }
 
-function generateInterface(iface: WitInterface) {
-  
-}
+function generateInterface(iface: WitInterface) {}
 
-function generateType(type: WitType) {
-
-}
+function generateType(type: WitType) {}
 
 function generatePrefixName(pkg: WitPackage) {
   const rawName = pkg.name;
-  const namespace = rawName.
-
+  const namespace = rawName;
 }

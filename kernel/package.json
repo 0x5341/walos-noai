@@ -3,12 +3,14 @@
   "module": "src/index.ts",
   "type": "module",
   "scripts": {
-    "typecheck": "bun check"
+    "typecheck": "bun check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
   },
   "devDependencies": {
     "@types/bun": "^1.4.4",
-    "@typescript/lib-dom": "npm:@types/web@^0.0.360",
-    "change-case": "^5.4.4"
+    "change-case": "^5.4.4",
+    "oxlint": "^1.94.0"
   },
   "peerDependencies": {
     "typescript": "^7"

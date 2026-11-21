@@ -1,4 +1,4 @@
-import { Process, type ProcessSpawnOption } from "../process";
+import { Process } from "../process";
 import type { ProcessContext } from "../process_context";
 
 export class HostProcess extends Process {
