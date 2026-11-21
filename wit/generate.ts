@@ -1,62 +1,13 @@
 import { $ } from "bun";
-
-interface Wit {
-  worlds: WitWorld[];
-  interfaces: any[];
-  types: WitType[];
-  packages: WitPackage[];
-}
-
-interface WitWorld {
-  name: string;
-  imports: Record<string, { interface: { id: number } }>;
-  exports: Record<string, { interface: { id: number } }>;
-  package: number;
-}
-
-interface WitInterface {
-  name: string;
-  types: Record<string, number>;
-  functions: Record<
-    string,
-    {
-      name: string;
-      kind: WitFunctionKind;
-      params: { name: string; type: number }[];
-      result: number;
-    }
-  >;
-  package: number;
-}
-
-type WitFunctionKind =
-  | "freestanding"
-  | "async-freestading"
-  | {
-      method: number;
-    };
-
-interface WitType {
-  name: string;
-  kind: WitTypeType;
-  owner: { interface: number };
-  docs: { contents: string };
-}
-
-interface WitTypeType {
-  type: string | number;
-}
-
-interface WitPackage {
-  name: string;
-  interfaces: Record<string, number>;
-  worlds: Record<string, number>;
-}
+import { wit as wit_schema } from "./json_types";
+import * as v from "valibot";
 
 const path = import.meta.dirname;
 const worldname = process.argv[2];
 
-const wit = (await $`wasm-tools component wit ${path} --json`.json()) as Wit;
+const wit_json = await $`wasm-tools component wit ${path} --json`.json();
+const wit = v.parse(wit_schema, wit_json);
+
 // Generate base type
 const baseType = `// base types
 
@@ -92,50 +43,12 @@ export type StreamReadable<T> = ReadableStream<T>;
 export type StreamWritable<T> = WritableStream<T>;
 `;
 const theworld = (() => {
-  const theworld = wit.worlds.filter((world) => world.name === worldname);
-  if (theworld.length === 0) {
+  const theworlds = wit.worlds.filter((world) => world.name === worldname);
+  if (theworlds.length === 0) {
     throw new Error(`World not found: ${worldname}`);
   }
-  if (theworld.length > 1) {
+  if (theworlds.length > 1) {
     throw new Error(`Multiple worlds found: ${worldname}`);
   }
-  return theworld[0]!;
+  return theworlds[0]!;
 })();
-
-interface GeneratedType {
-  type: "alias";
-  packageName: string;
-  name: string;
-  jstype: string;
-  comment: string;
-}
-
-interface GeneratedFunction {
-  name: string;
-  args: { name: string; jstype: string }[];
-  returnType: string;
-  comment: string;
-}
-
-const generatedTypes: GeneratedType[] = [],
-  generatedInterfaces: any[] = [];
-
-function generateWorld(world: WitWorld) {
-  for (const [key, value] of Object.entries(world.imports)) {
-    const { id } = value.interface,
-      theinterface = wit.interfaces[id];
-  }
-}
-
-function generateInterface(iface: WitInterface) {
-  /* Empty */
-}
-
-function generateType(type: WitType) {
-  /* Empty */
-}
-
-function generatePrefixName(pkg: WitPackage) {
-  const rawName = pkg.name,
-    namespace = rawName;
-}
