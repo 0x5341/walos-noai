@@ -1,9 +1,9 @@
 import type { ResultE, ResultTE } from "../util/result";
 
-export type Instant = {
+export interface Instant {
   seconds: bigint; // s64
   nanoseconds: number; // u32
-};
+}
 
 export type Filesize = bigint;
 
@@ -18,8 +18,8 @@ export type DescriptorType =
   | string
   | null;
 
-export const enum DescriptorFlags {
-  Read = 1 << 0,
+export enum DescriptorFlags {
+  Read = Math.trunc(1),
   Write = 1 << 1,
   FileIntegritySync = 1 << 2,
   DataIntegritySync = 1 << 3,
@@ -28,7 +28,7 @@ export const enum DescriptorFlags {
 }
 export type DescriptorFlagsType = number;
 
-export type DescriptorStat = {
+export interface DescriptorStat {
   type: DescriptorType;
   linkCount: number;
   size: bigint;
@@ -36,15 +36,15 @@ export type DescriptorStat = {
   lastAccessed: Instant | null;
   lastModified: Instant | null;
   lastStatusChanged: Instant | null;
-};
+}
 
-export const enum PathFlags {
-  SymlinkFollow = 1 << 0,
+export enum PathFlags {
+  SymlinkFollow = Math.trunc(1),
 }
 export type PathFlagsType = number;
 
-export const enum OpenFlags {
-  Create = 1 << 0,
+export enum OpenFlags {
+  Create = Math.trunc(1),
   Directory = 1 << 1,
   Exclusive = 1 << 2,
   Truncate = 1 << 3,
@@ -55,10 +55,10 @@ export type LinkCount = number;
 
 export type NewTimestamp = "no-change" | "now" | Instant;
 
-export type DirectoryEntry = {
+export interface DirectoryEntry {
   type: DescriptorType;
   name: string;
-};
+}
 
 export type ErrorCode =
   | "access"
@@ -102,22 +102,22 @@ export type ErrorCode =
 export type Advice =
   "normal" | "sequential" | "random" | "will-need" | "dont-need" | "no-reuse";
 
-export type MetadataHashValue = {
+export interface MetadataHashValue {
   lower: bigint;
   upper: bigint;
-};
+}
 
 export interface Descriptor {
-  // always
+  // Always
   getType(): Promise<ResultTE<DescriptorType, ErrorCode>>;
   stat(): Promise<ResultTE<DescriptorStat, ErrorCode>>;
   getFlags(): Promise<ResultTE<DescriptorFlags, ErrorCode>>;
   [Symbol.asyncDispose](): Promise<void>;
 
-  // for file & directory
+  // For file & directory
   setTimes();
 
-  // for file
+  // For file
   read(
     offset: Filesize,
   ): Promise<[ReadableStream<Uint8Array>, Promise<ResultE<ErrorCode>>]>;
@@ -134,7 +134,7 @@ export interface Descriptor {
   sync(): Promise<ResultE<ErrorCode>>;
   setSize(size: Filesize): Promise<ResultE<ErrorCode>>;
 
-  // for directory
+  // For directory
   createDirectoryAt(path: string): Promise<ResultE<ErrorCode>>;
   createSymlinkAt(
     oldPath: string,

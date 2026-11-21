@@ -7,14 +7,14 @@ export class HostProcess extends Process {
   public stdout_reader: ReadableStream<Uint8Array>;
   public stderr_reader: ReadableStream<Uint8Array>;
 
-  constructor(pid: number, ppid: number) {
-    const stdin = new TransformStream<Uint8Array, Uint8Array>();
-    const stdout = new TransformStream<Uint8Array, Uint8Array>();
-    const stderr = new TransformStream<Uint8Array, Uint8Array>();
+  public constructor(pid: number, ppid: number) {
+    const stdin = new TransformStream<Uint8Array, Uint8Array>(),
+     stdout = new TransformStream<Uint8Array, Uint8Array>(),
+     stderr = new TransformStream<Uint8Array, Uint8Array>();
 
     super({
-      pid: pid,
-      ppid: ppid,
+      pid,
+      ppid,
       args: ["@walos/builtin/host"],
       environment: {},
       stdin: stdin.readable,
@@ -27,11 +27,11 @@ export class HostProcess extends Process {
     this.stderr_reader = stderr.readable;
   }
 
-  protected override async init(): Promise<void> {
-    return Promise.resolve();
+  protected override init(): void {
+    return;
   }
-  protected override start(ctx: ProcessContext): Promise<void> {
+  protected override  async start(ctx: ProcessContext): Promise<void> {
     this.ctx = ctx;
-    return new Promise(() => {});
+    return new Promise(() => { /* empty */ });
   }
 }

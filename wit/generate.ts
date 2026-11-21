@@ -9,22 +9,20 @@ interface Wit {
 
 interface WitWorld {
   name: string;
-  imports: { [key: string]: { interface: { id: number } } };
-  exports: { [key: string]: { interface: { id: number } } };
+  imports: Record<string, { interface: { id: number } }>;
+  exports: Record<string, { interface: { id: number } }>;
   package: number;
 }
 
 interface WitInterface {
   name: string;
-  types: { [key: string]: number };
-  functions: {
-    [key: string]: {
+  types: Record<string, number>;
+  functions: Record<string, {
       name: string;
       kind: WitFunctionKind;
       params: { name: string; type: number }[];
       result: number;
-    };
-  };
+    }>;
   package: number;
 }
 
@@ -48,18 +46,18 @@ interface WitTypeType {
 
 interface WitPackage {
   name: string;
-  interfaces: { [key: string]: number };
-  worlds: { [key: string]: number };
+  interfaces: Record<string, number>;
+  worlds: Record<string, number>;
 }
 
-const path = import.meta.dirname;
+const path = import.meta.dirname,
 
-const worldname = process.argv[2];
+ worldname = process.argv[2],
 
-const wit = (await $`wasm-tools component wit ${path} --json`.json()) as Wit;
+ wit = (await $`wasm-tools component wit ${path} --json`.json()) as Wit,
 
 // generate base type
-const baseType = `// base types
+ baseType = `// base types
 
 export type Result<T, E> = ResultOK<T> | ResultErr<E>;
 export interface ResultOK<T> { kind: "ok", value: T };
@@ -91,9 +89,9 @@ export type Feature<T> = Promise<T>
 
 export type StreamReadable<T> = ReadableStream<T>;
 export type StreamWritable<T> = WritableStream<T>;
-`;
+`,
 
-const theworld = (() => {
+ theworld = (() => {
   const theworld = wit.worlds.filter((world) => world.name === worldname);
   if (theworld.length === 0) {
     throw new Error(`World not found: ${worldname}`);
@@ -104,36 +102,36 @@ const theworld = (() => {
   return theworld[0]!;
 })();
 
-type GeneratedType = {
+interface GeneratedType {
   type: "alias";
   packageName: string;
   name: string;
   jstype: string;
   comment: string;
-};
+}
 
-type GeneratedFunction = {
+interface GeneratedFunction {
   name: string;
   args: { name: string; jstype: string }[];
   returnType: string;
   comment: string;
-};
+}
 
-let generatedTypes: GeneratedType[] = [];
-let generatedInterfaces: any[] = [];
+const generatedTypes: GeneratedType[] = [];
+const generatedInterfaces: any[] = [];
 
 function generateWorld(world: WitWorld) {
   for (const [key, value] of Object.entries(world.imports)) {
-    const id = value.interface.id;
+    const {id} = value.interface;
     const theinterface = wit.interfaces[id];
   }
 }
 
-function generateInterface(iface: WitInterface) {}
+function generateInterface(iface: WitInterface) { /* empty */ }
 
-function generateType(type: WitType) {}
+function generateType(type: WitType) { /* empty */ }
 
 function generatePrefixName(pkg: WitPackage) {
-  const rawName = pkg.name;
-  const namespace = rawName;
+  const rawName = pkg.name,
+   namespace = rawName;
 }

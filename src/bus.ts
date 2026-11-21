@@ -28,16 +28,16 @@ export class KernelBus {
   }
 }
 
-export type KernelBusOption = {
+export interface KernelBusOption {
   workerUrl?: string;
   kernelName?: string;
-};
+}
 
 function kernelBusOptionWithDefault(
   option?: KernelBusOption,
 ): Required<KernelBusOption> {
   return {
-    workerUrl: option?.workerUrl ?? "./kernel.worker.js",
     kernelName: option?.kernelName ?? "walos-kernel",
+    workerUrl: option?.workerUrl ?? "./kernel.worker.js",
   };
 }

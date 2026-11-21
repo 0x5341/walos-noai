@@ -1,5 +1,5 @@
 import type { Descriptor } from "./filesystem/interface";
 
-export type KernelOption = {
+export interface KernelOption {
   fsroot: Descriptor;
-};
+}

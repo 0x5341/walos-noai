@@ -4,11 +4,11 @@ import type { CliErrorCode, ProcessContext, ResultE } from "./process_context";
 type ErrorKind = "ok" | "error" | number;
 
 class ExitError extends Error {
-  kind: ErrorKind;
+  public kind: ErrorKind;
   static {
     this.prototype.name = "ExitError";
   }
-  constructor(options: { kind: ErrorKind }) {
+  public constructor(options: { kind: ErrorKind }) {
     const { kind, ...rest } = options;
     super(`Exit with kind:${kind}`, rest);
     this.kind = kind ?? "ok";
@@ -16,15 +16,15 @@ class ExitError extends Error {
 }
 
 export abstract class Process {
-  readonly pid: ProcessID;
-  readonly ppid: ProcessID;
-  readonly environment: Record<string, string>;
-  readonly args: string[];
-  readonly stdin: ReadableStream<Uint8Array>;
-  readonly stdout: WritableStream<Uint8Array>;
-  readonly stderr: WritableStream<Uint8Array>;
+  public readonly pid: ProcessID;
+  public readonly ppid: ProcessID;
+  public readonly environment: Record<string, string>;
+  public readonly args: string[];
+  public readonly stdin: ReadableStream<Uint8Array>;
+  public readonly stdout: WritableStream<Uint8Array>;
+  public readonly stderr: WritableStream<Uint8Array>;
 
-  constructor(option: ProcessSpawnOption) {
+  public constructor(option: ProcessSpawnOption) {
     this.pid = option.pid;
     this.ppid = option.ppid;
     this.environment = option.environment;
@@ -41,15 +41,15 @@ export abstract class Process {
     return {
       cli: {
         environment: {
-          getEnvironment() {
-            return Promise.resolve(self.environment);
-          },
-          getArguments() {
+           async getArguments() {
             return Promise.resolve(self.args);
           },
-          getInitialCwd() {
-            if (self.environment["CWD"]) {
-              return Promise.resolve(self.environment["CWD"]);
+           async getEnvironment() {
+            return Promise.resolve(self.environment);
+          },
+           async getInitialCwd() {
+            if (self.environment.CWD) {
+              return Promise.resolve(self.environment.CWD);
             } else {
               return Promise.resolve(undefined);
             }
@@ -67,8 +67,26 @@ export abstract class Process {
             throw new ExitError({ kind: statusCode });
           },
         },
+        stderr: {
+          async writeViaStream(data) {
+            return data
+              .pipeTo(self.stderr)
+              .then(() => {
+                return {
+                  kind: "ok",
+                  ok: undefined,
+                } satisfies ResultE<CliErrorCode>;
+              })
+              .catch(() => {
+                return {
+                  kind: "error",
+                  err: "pipe",
+                } satisfies ResultE<CliErrorCode>;
+              });
+          },
+        },
         stdin: {
-          async readViaStream() {
+          readViaStream() {
             let resolver: (result: ResultE<CliErrorCode>) => void;
             const promise = new Promise<ResultE<CliErrorCode>>((resolve) => {
               resolver = resolve;
@@ -93,8 +111,8 @@ export abstract class Process {
                   ctl.error(err);
                 }
               },
-              async cancel(reason) {
-                reader.cancel(reason);
+              cancel(reason) {
+                void reader.cancel(reason);
                 resolver({ kind: "error", err: "pipe" });
               },
             });
@@ -148,24 +166,6 @@ export abstract class Process {
               });
           },
         },
-        stderr: {
-          async writeViaStream(data) {
-            return data
-              .pipeTo(self.stderr)
-              .then(() => {
-                return {
-                  kind: "ok",
-                  ok: undefined,
-                } satisfies ResultE<CliErrorCode>;
-              })
-              .catch(() => {
-                return {
-                  kind: "error",
-                  err: "pipe",
-                } satisfies ResultE<CliErrorCode>;
-              });
-          },
-        },
       },
     };
   }
@@ -178,17 +178,17 @@ export abstract class Process {
     try {
       const ctx = this.mkProcessContext();
       await this.start(ctx);
-    } catch (err) {
-      if (err instanceof ExitError) {
-        if (err.kind === "ok") {
+    } catch (error) {
+      if (error instanceof ExitError) {
+        if (error.kind === "ok") {
           return 0;
-        } else if (err.kind === "error") {
+        } else if (error.kind === "error") {
           return 1;
         } else {
-          return err.kind;
+          return error.kind;
         }
       } else {
-        throw err;
+        throw error;
       }
     }
     return 0;
@@ -198,7 +198,7 @@ export abstract class Process {
   protected abstract start(ctx: ProcessContext): Promise<void>;
 }
 
-export type ProcessSpawnOption = {
+export interface ProcessSpawnOption {
   pid: ProcessID;
   ppid: ProcessID;
   environment: Record<string, string>;
@@ -207,4 +207,4 @@ export type ProcessSpawnOption = {
   stdin: ReadableStream<Uint8Array>;
   stdout: WritableStream<Uint8Array>;
   stderr: WritableStream<Uint8Array>;
-};
+}

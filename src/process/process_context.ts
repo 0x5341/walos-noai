@@ -1,4 +1,4 @@
-// based on wasi 0.3
+// Based on wasi 0.3
 
 import type { Result, ResultE } from "../util/result";
 

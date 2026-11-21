@@ -7,13 +7,13 @@ import { RPCPort } from "./util/rpcport";
 
 export class Kernel {
   private fsroot!: Descriptor;
-  private busport: RPCPort<BusMsg>;
+  private readonly busport: RPCPort<BusMsg>;
   private initialized = false;
-  private processes: Array<Process> = [];
-  private nextProcessID: number = 0;
+  private readonly processes: Process[] = [];
+  private nextProcessID = 0;
   private hostProcess: HostProcess | undefined;
 
-  constructor() {
+  public constructor() {
     this.busport = new RPCPort();
     this.busHandleSet();
   }
@@ -26,10 +26,23 @@ export class Kernel {
 
   private busHandleSet() {
     this.busport.connect({
-      isKernelInitialized: async () => {
+      getHostProcessContext: () => {
+        this.checkInitialized();
+
+        if (this.hostProcess === undefined) {
+          throw new Error("Host process is not spawned");
+        }
+
+        if (this.hostProcess.ctx === undefined) {
+          throw new Error("Host process context is not initialized");
+        }
+
+        return [this.hostProcess.ctx, []];
+      },
+      isKernelInitialized: () => {
         return [this.initialized, []];
       },
-      kernelInitialize: async (option) => {
+      kernelInitialize: (option) => {
         this.initialized = true;
 
         const opt = kernelOptionWithDefault(option);
@@ -37,7 +50,7 @@ export class Kernel {
 
         return [undefined, []];
       },
-      spawnHostProcess: async () => {
+      spawnHostProcess: () => {
         this.checkInitialized();
 
         if (this.hostProcess !== undefined) {
@@ -52,22 +65,9 @@ export class Kernel {
         const process = new HostProcess(pid, ppid);
         this.processes.push(process);
         this.hostProcess = process;
-        process.initial();
-        process.run();
+        void process.initial();
+        void process.run();
         return [pid, []];
-      },
-      getHostProcessContext: async () => {
-        this.checkInitialized();
-
-        if (this.hostProcess === undefined) {
-          throw new Error("Host process is not spawned");
-        }
-
-        if (this.hostProcess.ctx === undefined) {
-          throw new Error("Host process context is not initialized");
-        }
-
-        return [this.hostProcess.ctx, []];
       },
     });
   }

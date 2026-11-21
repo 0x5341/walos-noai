@@ -6,4 +6,4 @@ export interface WalosProcessSpawnSpawnHandle {
     terminate: () => Promise<void>
 }
 
-export interface WalosProcessProcessOnlySpawn extends WalosProcessSpawn { }
+export type WalosProcessProcessOnlySpawn = WalosProcessSpawn

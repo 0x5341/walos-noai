@@ -1,42 +1,42 @@
 export class RPCPort<Map> {
-  port?: MessagePort;
+  public port?: MessagePort;
 
-  constructor(port?: MessagePort) {
+  public constructor(port?: MessagePort) {
     this.port = port;
   }
 
-  call<Method extends keyof Map>(
+  public  async call<Method extends keyof Map>(
     method: Method,
     data: LookUp<Map, Method>[0],
     transfer: Transferable[],
   ): Promise<LookUp<Map, Method>[1]> {
     return new Promise((resolve, _) => {
-      const id = Math.floor(Math.random() * 1000000);
-      const listener = (event: MessageEvent) => {
+      const id = Math.floor(Math.random() * 1_000_000),
+       listener = (event: MessageEvent) => {
         const msg = event.data as RPCMsg;
         if (msg.type === "response" && msg.id === id) {
           this.port?.removeEventListener("message", listener);
-          resolve(msg.data as LookUp<Map, keyof Map>[1]);
+          resolve(msg.data);
         }
       };
       this.port?.addEventListener("message", listener);
-      this.port?.postMessage({ method, type: "request", id, data }, transfer);
+      this.port?.postMessage({ data, id, method, type: "request" }, transfer);
     });
   }
 
-  connect(handler: HandlerList<Map>) {
+  public connect(handler: HandlerList<Map>) {
     addEventListener("message", async (event: MessageEvent) => {
       const msg = event.data as RPCMsg;
       if (msg.type === "request" && msg.method in handler) {
         const response = await handler[msg.method as keyof Map](
-          msg.data as LookUp<Map, keyof Map>[0],
+          msg.data,
         );
         this.port?.postMessage(
           {
+            data: response[0],
+            id: msg.id,
             method: msg.method,
             type: "response",
-            id: msg.id,
-            data: response[0],
           },
           response[1],
         );
@@ -45,12 +45,12 @@ export class RPCPort<Map> {
   }
 }
 
-export type RPCMsg = {
+export interface RPCMsg {
   method: string;
   type: "request" | "response";
   id: number;
   data: unknown;
-};
+}
 
 type LookUp<Map, Key> = Key extends keyof Map
   ? Map[Key] extends [infer Arg, infer Res]
